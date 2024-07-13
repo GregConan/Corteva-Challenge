@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "corteva-challenge"
+version = "0.1.0"
+description = "Coding challenge for Corteva"
+authors = ["Greg Conan <gregmconan@gmail.com>"]
+readme = "README.md"
+package-mode = false
+
+[tool.poetry.dependencies]
+python = "^3.10"
+numpy = "^2.0.0"
+pandas = "^2.2.2"
+Flask-SQLAlchemy = "^3.1.1"
+sqlalchemy = "^2.0.31"
+flask = "^3.0.3"
+psycopg2-binary = {version = "^2.9.9", allow-prereleases = true}
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
