@@ -14,9 +14,41 @@ from glob import glob
 import json
 import logging
 import os
+import pdb
+import requests
 import shutil
 import sys
 from typing import Any, Dict, Iterable, List, Mapping, NamedTuple, Optional, Set, Union
+
+
+def as_HTTPS_URL(*parts: str) -> str:
+    return "https://" + "/".join(parts)
+
+
+def download_GET(path_URL: str, headers: Dict[str, Any]) -> Any:
+
+    # Make the request to the GitHub API
+    response = requests.get(path_URL, headers=headers)
+
+    # Check if the request was successful
+    try:
+        assert response.status_code == 200
+        # files = response.json()
+        return response
+    except (AssertionError, requests.JSONDecodeError) as e:
+        print(f"\nFailed to retrieve file(s) at {path_URL}\n"
+              f"{response.status_code} Error: {response.reason}")
+        pdb.set_trace()
+        # files = []
+    # return files
+
+
+def log(content: str):
+    logging.getLogger(__name__).info(content)
+
+
+def utcnow() -> dt.datetime:
+    return dt.datetime.now(tz=dt.timezone.utc)
 
 
 class ShowTimeTaken:
@@ -30,10 +62,8 @@ class ShowTimeTaken:
         self.doing_what = doing_what
         self.show = show
 
-
     def __call__(self):
         pass
-
 
     def __enter__(self):
         """
@@ -43,7 +73,6 @@ class ShowTimeTaken:
         self.show(f"Just started {self.doing_what}")
         self.start = dt.datetime.now()
         return self
-    
 
     def __exit__(self, exc_type: Optional[type] = None,
                  exc_val: Optional[BaseException] = None, exc_tb=None):

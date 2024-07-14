@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "corteva-challenge"
+name = "corteva_challenge"
 version = "0.1.0"
 description = "Coding challenge for Corteva"
 authors = ["Greg Conan <gregmconan@gmail.com>"]
@@ -14,7 +14,12 @@ Flask-SQLAlchemy = "^3.1.1"
 sqlalchemy = "^2.0.31"
 flask = "^3.0.3"
 psycopg2-binary = {version = "^2.9.9", allow-prereleases = true}
+requests = "^2.32.3"
 
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.2.2"
+python-dotenv = "^1.0.1"
 
 [build-system]
 requires = ["poetry-core"]

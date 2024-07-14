@@ -19,15 +19,9 @@ from typing import Any, Dict, Iterable, List, Mapping, NamedTuple, Optional, Set
 
 
 # Local custom imports
-from src.utilities import ShowTimeTaken
-from src.orm import create_Flask_app
+from corteva_challenge.utilities import ShowTimeTaken
+from corteva_challenge import create_Flask_app, db
 
 
-def main():
+with ShowTimeTaken(f"running {sys.argv[0]}"):
     app = create_Flask_app()
-
-
-if __name__ == "__main__":
-    with ShowTimeTaken(f"running {sys.argv[0]}"):
-        main()
-
