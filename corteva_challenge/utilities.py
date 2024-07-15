@@ -33,18 +33,14 @@ def download_GET(path_URL: str, headers: Dict[str, Any]) -> Any:
     # Check if the request was successful
     try:
         assert response.status_code == 200
-        # files = response.json()
         return response
     except (AssertionError, requests.JSONDecodeError) as e:
         print(f"\nFailed to retrieve file(s) at {path_URL}\n"
               f"{response.status_code} Error: {response.reason}")
-        pdb.set_trace()
-        # files = []
-    # return files
 
 
-def log(content: str):
-    logging.getLogger(__name__).info(content)
+def log(content: str, level=logging.INFO) -> None:
+    logging.getLogger(__name__).log(msg=content, level=level)
 
 
 def utcnow() -> dt.datetime:
@@ -53,7 +49,7 @@ def utcnow() -> dt.datetime:
 
 class ShowTimeTaken:
     # TODO Use Python's "logging" library to define "log" function below
-    def __init__(self, doing_what: str, show: Callable = log) -> None:
+    def __init__(self, doing_what: str, show: Callable = print) -> None:
         """
         Context manager to time and log the duration of any block of code 
         :param doing_what: String describing what is being timed
@@ -70,8 +66,8 @@ class ShowTimeTaken:
         Log the moment that script execution enters the context manager and
         what it is about to do. 
         """
-        self.show(f"Just started {self.doing_what}")
         self.start = dt.datetime.now()
+        self.show(f"Started {self.doing_what} at {self.start}")
         return self
 
     def __exit__(self, exc_type: Optional[type] = None,

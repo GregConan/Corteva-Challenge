@@ -12,10 +12,12 @@ import pytest
 from corteva_challenge import create_Flask_app
 
 # env_fpath = os.path.join(os.path.expanduser("~"), ".tokens", ".corteva.env")
+"""
 env_fpath = "/home/gconan/.tokens/.corteva.env"
 assert os.path.exists(env_fpath)
 loaded = load_dotenv(env_fpath)
 assert loaded
+"""
 
 
 @pytest.fixture()

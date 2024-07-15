@@ -7,55 +7,19 @@ Created: 2024-07-13
 Updated: 2024-07-13
 """
 # Import standard libraries
+from concurrent.futures import ProcessPoolExecutor
+import multiprocessing as mp
 import os
-import pdb
-from typing import Any, Dict, Iterable, List, Mapping, NamedTuple, Optional, Set, Union
-
-# PyPI imports
-import dask.dataframe as dd
-from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
-import psycopg2
-import sqlalchemy
-from sqlalchemy import orm
+from typing import Any, Callable, Dict, Iterable, List, Mapping, NamedTuple, Optional, Set, Union
 
 # Local imports
-from corteva_challenge.models import WeatherStation
 from corteva_challenge.config import (DATA_SRC_GITHUB_REPO_NAME,
                                       DATA_SRC_GITHUB_REPO_OWNER)
-from corteva_challenge.utilities import as_HTTPS_URL, download_GET
+from corteva_challenge.models import CropYield, GitHubRepoAPI, WeatherStation
+from corteva_challenge.utilities import ShowTimeTaken
 
 
-class GitHubRepoAPI:
-    ORIGIN = "api.github.com"
-
-    def __init__(self, auth_token: str, name: str, owner: str,
-                 data_subdirs: List[str],
-                 endpt_type: str = "repos",
-                 data_to_get: str = "contents") -> None:
-
-        # HTTP request headers to download data files
-        self.headers = {"Authorization": f"Bearer {auth_token}",
-                        "Accept": "application/vnd.github.raw+json"}
-
-        # (First part of) GitHub API endpoint URL
-        self.URL_parts = [self.ORIGIN, endpt_type, owner, name, data_to_get]
-
-        self.file_URLs_in = dict()
-        for subdir in data_subdirs:
-            self.file_URLs_in[subdir] = self.list_file_URLs_in(subdir)
-
-    def list_file_URLs_in(self, subdir: str) -> List[str]:
-        return {file_metadata["name"]: file_metadata.get("download_url")
-                for file_metadata in
-                self.download(as_HTTPS_URL(*self.URL_parts, subdir)).json()}
-
-    def download(self, path: str):
-
-        return download_GET(path, self.headers)
-
-
-def ingest(gh_token):
+def ingest(gh_token: str, max_files: Optional[int] = None):
     DAILY_WEATHER_SUBDIR = "wx_data"
     YEARLY_YIELD_SUBDIR = "yld_data"
 
@@ -65,10 +29,18 @@ def ingest(gh_token):
                          data_subdirs=[DAILY_WEATHER_SUBDIR,
                                        YEARLY_YIELD_SUBDIR])
 
-    stations = list()
-    for station_name, file_URL in \
-            repo.file_URLs_in[DAILY_WEATHER_SUBDIR].items():
+    get_files_from(repo, WeatherStation.load_reports_from,
+                   DAILY_WEATHER_SUBDIR, max_files)
+    get_files_from(repo, CropYield.load_yields_from,
+                   YEARLY_YIELD_SUBDIR, max_files)
 
-        stations.append(WeatherStation.load_reports(
-            station_name, repo.download(file_URL).text
-        ))
+
+def get_files_from(repo: GitHubRepoAPI, load_method: Callable, subdir: str,
+                   max_files: Optional[int] = None):
+    n_usable_CPUs = len(os.sched_getaffinity(0))
+    files = repo.files_in[subdir]
+    if max_files is not None:
+        files = files[:max_files]
+    with ShowTimeTaken(f"processing {len(files)} files from {subdir}"):
+        with ProcessPoolExecutor(max_workers=n_usable_CPUs - 1) as executor:
+            processes = [p for p in executor.map(load_method, files)]

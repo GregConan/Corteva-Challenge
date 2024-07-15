@@ -1,22 +1,22 @@
 #!/usr/bin/env python3
 # coding: utf-8
 
-
-# Standard imports
+"""
+Greg Conan: gregmconan@gmail.com
+Created: 2024-07-14
+Updated: 2024-07-14
+"""
+# Import standard libraries
 import os
 
 # PyPI imports
-import dask.dataframe as dd
 from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
-import psycopg2
-import sqlalchemy
-from sqlalchemy import orm
 
 # Local custom imports
 from corteva_challenge.ingest import ingest
+from corteva_challenge.utilities import ShowTimeTaken
 
 
 def test_ingest(app: Flask):
-
-    ingest(os.getenv("GITHUB_TOKEN"))
+    with ShowTimeTaken("testing the 'ingest' function"):
+        ingest(os.getenv("GITHUB_TOKEN"), max_files=10)
