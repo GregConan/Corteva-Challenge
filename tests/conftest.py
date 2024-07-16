@@ -1,23 +1,16 @@
 #!/usr/bin/env python3
 # coding: utf-8
 
-# Standard imports
-import os
-
+"""
+Greg Conan: gregmconan@gmail.com
+Created: 2024-07-14
+Updated: 2024-07-15
+"""
 # PyPI imports
-from dotenv import load_dotenv
 import pytest
 
 # Local custom imports
 from corteva_challenge import create_Flask_app
-
-# env_fpath = os.path.join(os.path.expanduser("~"), ".tokens", ".corteva.env")
-"""
-env_fpath = "/home/gconan/.tokens/.corteva.env"
-assert os.path.exists(env_fpath)
-loaded = load_dotenv(env_fpath)
-assert loaded
-"""
 
 
 @pytest.fixture()

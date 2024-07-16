@@ -1,5 +1,12 @@
 #!/usr/bin/env python3
 # coding: utf-8
+
+"""
+Greg Conan: gregmconan@gmail.com
+Created: 2024-07-13
+Updated: 2024-07-15
+"""
+# Import standard libraries
 import os
 
 # Data source GitHub repository details

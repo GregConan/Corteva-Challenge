@@ -6,16 +6,10 @@ Greg Conan: gregmconan@gmail.com
 Created: 2024-07-12
 Updated: 2024-07-14
 """
-
 # PyPI imports
 from flasgger import Swagger
 from flask import Flask
 from flask import jsonify
-from flask_sqlalchemy import SQLAlchemy
-import psycopg2
-import sqlalchemy as sa
-from sqlalchemy import orm
-from sqlalchemy.dialects.postgresql import insert
 
 # Local custom imports
 from corteva_challenge.models import db
@@ -23,7 +17,7 @@ from corteva_challenge.ingest import ingest
 from corteva_challenge.views import bp
 
 
-def create_Flask_app() -> Flask:  # (db: SQLAlchemy)
+def create_Flask_app() -> Flask:
     # Create Flask app to attach to PostgreSQL DB
     app = Flask(__name__)
     app.config.from_pyfile("config.py")

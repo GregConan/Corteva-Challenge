@@ -4,20 +4,17 @@
 """
 Greg Conan: gregmconan@gmail.com
 Created: 2024-07-14
-Updated: 2024-07-14
+Updated: 2024-07-15
 """
-# Import standard libraries
-import os
-
 # PyPI imports
 from flask import Flask
 
 # Local custom imports
 from corteva_challenge import db
-# from corteva_challenge.utilities import log
+# from corteva_challenge.utilities import log  # TODO replace print with log
 
 
-def test_setup(app: Flask):
+def test_setup(app: Flask) -> None:
     # GIVEN: Setup test
     db.drop_all()
 

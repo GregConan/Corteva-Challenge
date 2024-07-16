@@ -4,7 +4,7 @@
 """
 Greg Conan: gregmconan@gmail.com
 Created: 2024-07-14
-Updated: 2024-07-14
+Updated: 2024-07-15
 """
 # Import standard libraries
 import os
@@ -17,6 +17,6 @@ from corteva_challenge.ingest import ingest
 from corteva_challenge.utilities import ShowTimeTaken
 
 
-def test_ingest(app: Flask):
+def test_ingest(app: Flask) -> None:
     with ShowTimeTaken("testing the 'ingest' function"):
         ingest(os.getenv("GITHUB_TOKEN"), max_files=10)

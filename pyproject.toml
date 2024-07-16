@@ -22,6 +22,8 @@ flasgger = "^0.9.7.1"
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.2.2"
 python-dotenv = "^1.0.1"
+awscli = "^1.33.26"
+ebcli = "^4.0.18"
 
 [build-system]
 requires = ["poetry-core"]
