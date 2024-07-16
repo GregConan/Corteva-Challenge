@@ -32,9 +32,9 @@ See `requirements.txt` for full list of dependencies.
 
 ### Endpoints
 
-#### /
-
-#### /api/weather
+- `/` returns a simple message stating whether the application is running.
+- `/apidocs` provides additional information on this application's API endpoints and what data they allow you to access.
+- `/api/weather` provides access to 
 
 #### /api/weather/stats
 

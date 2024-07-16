@@ -69,6 +69,7 @@ class DBTable:
         for field_name, field_type in field_types.items():
             params[field_name] = request_args.get(field_name, type=field_type)
         result_page = cls.run_page_query(**params)
+        items = [row.to_dict() for row in result_page.items]
         return jsonify(page=result_page.page,
                        items=[row.to_dict() for row in result_page.items],
                        total=result_page.total, next=result_page.next_num)
@@ -208,6 +209,7 @@ class WeatherReport(db.Model, DBTable):
         result = {field: getattr(self, field) for field in self.FIELDS}
         result["station_id"] = self.station_id
         result["id"] = self.id
+        result["date"] = result["date"].isoformat()
         return result
 
     @classmethod
@@ -326,8 +328,8 @@ class WeatherStation(db.Model, DimensionTable):
 
     def to_dict(self) -> Dict[str, Any]:
         return {"station_name": self.station_name,  # "reports": self.reports,
-                "id": self.id, "created": self.created,
-                "updated": self.updated}
+                "id": self.id, "created": self.created.isoformat(),
+                "updated": self.updated.isoformat()}
 
 
 class CropYield(db.Model, DBTable):
@@ -367,4 +369,4 @@ class CropYield(db.Model, DBTable):
 
     def to_dict(self) -> Dict[str, Any]:
         return {"corn_bushels": self.corn_bushels, "year": self.year,
-                "id": self.id, "created": self.created}
+                "id": self.id, "created": self.created.isoformat()}

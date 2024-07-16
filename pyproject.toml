@@ -17,6 +17,7 @@ psycopg2-binary = {version = "^2.9.9", allow-prereleases = true}
 requests = "^2.32.3"
 dask = {extras = ["dataframe"], version = "^2024.7.0"}
 flasgger = "^0.9.7.1"
+gunicorn = "^22.0.0"
 
 
 [tool.poetry.group.dev.dependencies]

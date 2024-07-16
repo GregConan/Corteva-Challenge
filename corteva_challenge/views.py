@@ -26,9 +26,57 @@ bp = Blueprint("weather", __name__, url_prefix="/api")
 def get_weather() -> Dict[str, Any]:
     """ Weather report data endpoint
     ---
+    parameters:
+      - name: max_date
+        in: query
+        type: string
+        required: false
+        default: all
+      - name: min_date
+        in: query
+        type: string
+        required: false
+        default: all
+      - name: station_id
+        in: query
+        type: integer
+        required: false
+        default: all
+      - name: page
+        in: query
+        type: integer
+        required: false
+        default: 1
+      - name: per_page
+        in: query
+        type: integer
+        required: false
+        default: 50
+    definitions:
+        WeatherReport:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    format: int32
+                date:
+                    type: string
+                    format: date
+                max_temp:
+                    type: number
+                    format: float 
+                min_temp:
+                    type: number
+                    format: float
+                precipitation:
+                    type: integer
+                    format: int32
+                station_id:
+                    type: integer
+                    format: int32
     responses:
         200:
-        description: JSON response containing daily weather data
+            description: Daily maximum/minimum temperature and precipitation at each weather station, plus record ID number and creation date
     """
     return WeatherReport.get_pagination_JSON(
         request.args, max_date=dt.date.fromisoformat,
@@ -42,7 +90,7 @@ def get_weather_stats() -> dict[str, object]:
     ---
     responses:
         200:
-        description: JSON response containing weather summary statistics
+            description: Weather summary statistics - total precipitation and average maximum and minimum temperature
     """
     all_stats = dict()
     for col_name in ("max_temp", "min_temp"):
@@ -57,9 +105,36 @@ def get_weather_stats() -> dict[str, object]:
 def get_weather_stations() -> Dict[str, Any]:
     """ Weather stations data endpoint
     ---
+    parameters:
+      - name: page
+        in: query
+        type: integer
+        required: false
+        default: 1
+      - name: per_page
+        in: query
+        type: integer
+        required: false
+        default: 50
+    definitions:
+        WeatherStation:
+            type: object
+            properties:
+                created:
+                    type: string
+                    format: date
+                id:
+                    type: integer
+                    format: int32
+                name:
+                    type: string
+                    format: string
+                updated:
+                    type: string
+                    format: date
     responses:
         200:
-        description: JSON response listing weather stations
+            description: List the name, update/creation date, and ID number of each weather station
     """
     return WeatherStation.get_pagination_JSON(request.args)
 
@@ -68,8 +143,35 @@ def get_weather_stations() -> Dict[str, Any]:
 def get_crop_yield() -> Dict[str, Any]:
     """ Crop yield data endpoint
     ---
+    parameters:
+      - name: page
+        in: query
+        type: integer
+        required: false
+        default: 1
+      - name: per_page
+        in: query
+        type: integer
+        required: false
+        default: 50
+    definitions:
+        CropYield:
+            type: object
+            properties:
+                corn_bushels:
+                    type: integer
+                    format: int32
+                created:
+                    type: string
+                    format: date
+                id:
+                    type: integer
+                    format: int32
+                year:
+                    type: string
+                    format: date
     responses:
         200:
-        description: JSON response containing yearly crop yield data
+            description: Number of corn bushels per year, plus crop yield record ID and creation date
     """
     return CropYield.get_pagination_JSON(request.args)
