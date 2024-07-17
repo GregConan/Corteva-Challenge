@@ -12,6 +12,7 @@ import os
 # Data source GitHub repository details
 DATA_SRC_GITHUB_REPO_NAME = "code-challenge-template"
 DATA_SRC_GITHUB_REPO_OWNER = "corteva"
+GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
 
 # PostgreSQLAlchemy DB details
 SQLALCHEMY_DATABASE_URI = os.getenv("SQLALCHEMY_DATABASE_URI", default=(

@@ -4,11 +4,9 @@
 """
 Greg Conan: gregmconan@gmail.com
 Created: 2024-07-13
-Updated: 2024-07-15
+Updated: 2024-07-16
 """
 # Import standard libraries
-from concurrent.futures import ProcessPoolExecutor
-import os
 from typing import Callable, Optional
 
 # Local custom imports
@@ -51,11 +49,9 @@ def get_files_from(repo: GitHubRepoAPI, load_method: Callable, subdir: str,
                    data files to download 
     :param max_files: Int, upper limit on the number of files to load at once
     """
-    n_usable_CPUs = len(os.sched_getaffinity(0))
     files = repo.files_in[subdir]
     if max_files is not None:
         files = files[:max_files]
     with ShowTimeTaken(f"processing {len(files)} files from {subdir}"):
-        with ProcessPoolExecutor(max_workers=n_usable_CPUs - 1) as executor:
-            processes = [p for p in executor.map(load_method, files)]
-            # TODO What should be done with the list of processes?
+        for eachfile in files:  # TODO Parallelize without breaking AWS deploy
+            load_method(eachfile)

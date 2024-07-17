@@ -4,7 +4,7 @@
 """
 Greg Conan: gregmconan@gmail.com
 Created: 2024-07-12
-Updated: 2024-07-15
+Updated: 2024-07-16
 """
 # Import standard libraries
 from collections.abc import Callable
@@ -63,6 +63,7 @@ def download_GET(path_URL: str, headers: Mapping[str, Any]) -> Any:
         assert response.status_code == 200
         return response
     except (AssertionError, requests.JSONDecodeError) as e:
+        # TODO replace print with log
         print(f"\nFailed to retrieve file(s) at {path_URL}\n"
               f"{response.status_code} Error: {response.reason}")
 

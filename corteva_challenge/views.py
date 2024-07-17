@@ -4,7 +4,7 @@
 """
 Greg Conan: gregmconan@gmail.com
 Created: 2024-07-12
-Updated: 2024-07-15
+Updated: 2024-07-16
 """
 # Import standard libraries
 import datetime as dt
@@ -15,8 +15,8 @@ from flask import Blueprint, jsonify, request
 import sqlalchemy as sa
 
 # Local custom imports
-from corteva_challenge.models import CropYield, db, WeatherReport, WeatherStation
-from corteva_challenge.models import db
+from corteva_challenge.models import (CropYield, db, WeatherReport,
+                                      WeatherStation)
 
 
 bp = Blueprint("weather", __name__, url_prefix="/api")
@@ -31,17 +31,14 @@ def get_weather() -> Dict[str, Any]:
         in: query
         type: string
         required: false
-        default: all
       - name: min_date
         in: query
         type: string
         required: false
-        default: all
       - name: station_id
         in: query
         type: integer
         required: false
-        default: all
       - name: page
         in: query
         type: integer
@@ -59,24 +56,34 @@ def get_weather() -> Dict[str, Any]:
                 id:
                     type: integer
                     format: int32
+                    example: 1
                 date:
                     type: string
                     format: date
+                    example: '2010-01-01'
                 max_temp:
                     type: number
                     format: float 
+                    example: 37
                 min_temp:
                     type: number
                     format: float
+                    example: -2
                 precipitation:
                     type: integer
                     format: int32
+                    example: 129
                 station_id:
                     type: integer
                     format: int32
+                    example: 5
     responses:
         200:
             description: Daily maximum/minimum temperature and precipitation at each weather station, plus record ID number and creation date
+            schema:
+                type: 'array'
+                items:
+                    $ref: '#/definitions/WeatherReport'
     """
     return WeatherReport.get_pagination_JSON(
         request.args, max_date=dt.date.fromisoformat,
@@ -92,12 +99,29 @@ def get_weather_stats() -> dict[str, object]:
         200:
             description: Weather summary statistics - total precipitation and average maximum and minimum temperature
     """
+    # TODO Modularize; move code below into DBTable/WeatherReport method(s)
+
+    # Build SQLAlchemy query to get overall yearly weather stats
     all_stats = dict()
-    for col_name in ("max_temp", "min_temp"):
-        all_stats[f"avg_{col_name}_degC"] = WeatherReport.run_math_query_on(
-            col_name, sa.func.avg)
-    all_stats["total_precip_cm"] = WeatherReport.run_math_query_on(
-        "precipitation", sa.func.sum)
+    year = sa.extract("year", WeatherReport.date).label("year")
+    query = db.select(
+        WeatherReport.station_id, year,
+        sa.func.avg(WeatherReport.min_temp).label("avg_min_temp_degC"),
+        sa.func.avg(WeatherReport.max_temp).label("avg_max_temp_degC"),
+        sa.func.sum(WeatherReport.precipitation).label("total_precip_cm")
+    ).group_by(WeatherReport.station_id, year)
+
+    # Only include the specific year(s) and weather station(s) requested
+    which = dict()
+    for filter_param in ("year", "station_id", "page", "per_page"):
+        which[filter_param] = request.args.get(filter_param, type=int)
+    if which.get("year") is not None:
+        query.filter_by(year=which.get("year"))
+    if which.get("station_id") is not None:
+        query.filter_by(station_id=which.get("station_id"))
+
+    # Execute and return query to get yearly weather stats for the station(s)
+    all_stats = [row._asdict() for row in db.session.execute(query)]
     return jsonify(all_stats)
 
 
@@ -161,15 +185,19 @@ def get_crop_yield() -> Dict[str, Any]:
                 corn_bushels:
                     type: integer
                     format: int32
+                    example: 123456
                 created:
                     type: string
                     format: date
+                    example: '2024-07-16T14:19:39.621049'
                 id:
                     type: integer
                     format: int32
+                    example: 6
                 year:
-                    type: string
-                    format: date
+                    type: integer
+                    format: int32
+                    example: 1990
     responses:
         200:
             description: Number of corn bushels per year, plus crop yield record ID and creation date

@@ -4,7 +4,7 @@
 """
 Greg Conan: gregmconan@gmail.com
 Created: 2024-07-12
-Updated: 2024-07-15
+Updated: 2024-07-16
 """
 # Import standard libraries
 from collections.abc import Callable
@@ -69,7 +69,6 @@ class DBTable:
         for field_name, field_type in field_types.items():
             params[field_name] = request_args.get(field_name, type=field_type)
         result_page = cls.run_page_query(**params)
-        items = [row.to_dict() for row in result_page.items]
         return jsonify(page=result_page.page,
                        items=[row.to_dict() for row in result_page.items],
                        total=result_page.total, next=result_page.next_num)
@@ -91,7 +90,7 @@ class DBTable:
 
 class DimensionTable(DBTable):
     """
-    DBTable extension with at least 1 other column, date-timestamp of the
+    DBTable extension with at least 1 other column, the date-timestamp of the
     moment that a given row was last updated.
     Defined to consolidate code shared/redundant between Model classes below.
     """
@@ -127,6 +126,9 @@ class OnlineDataFile:
 
 
 class GitHubRepoAPI:
+    """
+    GitHub repo file downloader that uses GET requests to access GitHub API
+    """
     ORIGIN = "api.github.com"
 
     def __init__(self, auth_token: str, name: str, owner: str,
@@ -183,7 +185,7 @@ class WeatherReport(db.Model, DBTable):
     __table_args__ = (  # Each WeatherStation has only one report per day
         db.UniqueConstraint("station_id", "date", name="uix_station_date"),
     )
-    # Numeric (non-metadata) fields/columns of any given weather data report
+    # Numeric non-metadata fields/columns of any given weather data report
     FIELDS = ("date", "max_temp", "min_temp", "precipitation")
 
     # Fields specific to this DB Table
@@ -199,18 +201,6 @@ class WeatherReport(db.Model, DBTable):
         return (f"<{self.min_temp}C to {self.max_temp}C with "
                 f"{self.precipitation}cm precip at "
                 f"{self.location} on {self.date}>")
-
-    def to_dict(self) -> Dict[str, Any]:
-        """
-        Get a DB row as a dict
-        :return: Dict[str, Any] mapping column names to their values in a
-                 given row of the weather_report PostgreSQL DBTable
-        """
-        result = {field: getattr(self, field) for field in self.FIELDS}
-        result["station_id"] = self.station_id
-        result["id"] = self.id
-        result["date"] = result["date"].isoformat()
-        return result
 
     @classmethod
     def convert_data_in(cls, row: Mapping[str, str],
@@ -269,6 +259,18 @@ class WeatherReport(db.Model, DBTable):
         """
         return db.session.execute(math_fn(getattr(cls, col_name))).scalar()
 
+    def to_dict(self) -> Dict[str, Any]:
+        """
+        Get a DB row as a dict
+        :return: Dict[str, Any] mapping column names to their values in a
+                 given row of the weather_report PostgreSQL DBTable
+        """
+        result = {field: getattr(self, field) for field in self.FIELDS}
+        result["station_id"] = self.station_id
+        result["id"] = self.id
+        result["date"] = result["date"].isoformat()
+        return result
+
 
 class WeatherStation(db.Model, DimensionTable):
     """
@@ -290,7 +292,7 @@ class WeatherStation(db.Model, DimensionTable):
                              station data (in .tsv text format) from, and
                              load that data from into the DBTable
         """
-        # Prevent addition of duplicate stations
+        # Insert new station name into database unless it is a duplicate
         station_name = os.path.splitext(station_file.name)[0]
         station_upsert = insert(cls).values(
             station_name=station_name).on_conflict_do_nothing(
@@ -298,15 +300,15 @@ class WeatherStation(db.Model, DimensionTable):
         ).returning(cls.id)
         result = db.session.execute(station_upsert)
         db.session.commit()
+
+        # Get automatically-generated station ID number
         station_id = result.scalar()
         if not station_id:
             station_id = db.session.query(cls).filter_by(
                 station_name=station_name).scalar().id
 
-        # Download station data
+        # Download station data and convert it to prepare to load it into DB
         tsv_contents = station_file.download_and_read()
-
-        # with io.StringIO(tsv_contents, newline="\n") as infile:
         reader = csv.DictReader(tsv_contents.split("\n"), delimiter="\t",
                                 fieldnames=WeatherReport.FIELDS,
                                 lineterminator="\n")
@@ -327,6 +329,11 @@ class WeatherStation(db.Model, DimensionTable):
         db.session.commit()
 
     def to_dict(self) -> Dict[str, Any]:
+        """
+        Get a DB row as a dict
+        :return: Dict[str, Any] mapping column names to their values in a
+                 given row of the weather_station PostgreSQL DBTable
+        """
         return {"station_name": self.station_name,  # "reports": self.reports,
                 "id": self.id, "created": self.created.isoformat(),
                 "updated": self.updated.isoformat()}
@@ -368,5 +375,10 @@ class CropYield(db.Model, DBTable):
         db.session.commit()
 
     def to_dict(self) -> Dict[str, Any]:
+        """
+        Get a DB row as a dict
+        :return: Dict[str, Any] mapping column names to their values in a
+                 given row of the crop_yield PostgreSQL DBTable
+        """
         return {"corn_bushels": self.corn_bushels, "year": self.year,
                 "id": self.id, "created": self.created.isoformat()}
