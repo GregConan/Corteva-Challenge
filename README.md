@@ -3,24 +3,31 @@
 ## Contents
 
 1. Contents
-1. Description
+1. Summary
 1. Dependencies
 1. Setup
     1. Download Code and Token From GitHub
     1. Set Up AWS Before Creating App
     1. Create App in AWS Elastic Beanstalk
     1. Deploy App in AWS EC2
-1. API Endpoints
-    1. List
+    1. Notes
+1. API
+    1. Endpoints
     1. Additional Details
     1. Examples
 1. Data Model
 1. Future Features
 1. Metadata
 
-## Description
+## Summary
 
 This application retrieves, stores, processes, and accesses data about daily weather and yearly crop yields.
+
+### Current Deployment
+
+As of 2024-07-16, this application is running live on AWS at the URL below. See the [APIDocs](http://gconan-corteva-challenge.us-west-2.elasticbeanstalk.com/apidocs) for API usage information.
+
+http://gconan-corteva-challenge.us-west-2.elasticbeanstalk.com
 
 ## Dependencies
 
@@ -40,58 +47,67 @@ See `requirements.txt` for full list of dependencies.
 
 ### 1. Download Code and Token From GitHub
 
-1. After navigating to this repository, click the `Code` dropdown and click `Download ZIP` to get a `.zip` file copy of this `Corteva-Challenge` application.
+1. After navigating to this (`Corteva-Challenge`) repository, click the `Code` dropdown and click `Download ZIP` to get this repository as a `.zip` file.
 1. [Get a valid GitHub authorization token to access the GitHub API.](https://docs.github.com/en/rest/authentication/authenticating-to-the-rest-api)
 
 ### 2. Set Up AWS Before Creating App
 
-1. Create an AWS account.
-1. Navigate to the AWS Management Console in your browser.
-1. [Create and download an AWS EC2 key pair.](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/create-key-pairs.html#having-ec2-create-your-key-pair) Name it something like `Corteva-Challenge`.
-1. In the IAM page of the AWS Management Console, go to `Roles` and click `Create role`. Under `Use case`, select `EC2`. Click `Next`. On the `Add permissions` page, add the following permissions policies, then click `Next`. After naming the role, click `Create role`.
+1. Open the [AWS Management Console](https://aws.amazon.com/console/) in your browser.
+1. Create, or log in to, an AWS account.
+1. [Create and download an AWS EC2 key pair.](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/create-key-pairs.html#having-ec2-create-your-key-pair) I named mine `Corteva-Challenge`.
+1. In the IAM page of the AWS Management Console, go to `Roles` and click `Create role`. Under `Use case`, select `EC2`. Click `Next`. On the `Add permissions` page, add the following permissions policies, then click `Next`. 
 
     - `AmazonS3FullAccess`
     - `AWSElasticBeanstalkRoleWorkerTier`
     - `AWSElasticBeanstalkWebTier`
     - `AWSElasticBeanstalkWorkerTier`
 
-1. [Create an EC2 instance profile](https://docs.aws.amazon.com/codedeploy/latest/userguide/getting-started-create-iam-instance-profile.html) using these permissions.
+1. Name the role and click `Create role`.
+1. [Create an EC2 instance profile](https://docs.aws.amazon.com/codedeploy/latest/userguide/getting-started-create-iam-instance-profile.html) using this role.
 
 ### 3. Create App in AWS Elastic Beanstalk
 
-1. Navigate to the the Elastic Beanstalk page in the AWS Management Console.
+1. Open the the Elastic Beanstalk page in the AWS Management Console.
 1. Click `Create application`.
 1. Fill in the `Application name`, `Environment name`, and `Domain` fields. For this example, I named my app `Corteva-Challenge` with an environment called `Corteva-Challenge-env` at the subdomain `gconan-corteva-challenge`.
 1. In the `Platform` field, select `Python`, and for `Platform branch` select `Python 3.11`.
 1. Check `Upload your code` and `Local file`, then click `Choose file` and upload your `.zip` file copy of the `Corteva-Challenge` code repo. Click `Next`.
 1. Click `Use an existing service role` and select the default `aws-elasticbeanstalk-service-role`. Under `EC2 key pair`, select the key pair you downloaded earlier. Under `EC2 instance role`, select the role you created earlier.
-1. Under `Public IP address`, click the `Activated` box. Also click the `Enable database` switch. Under `Username` and `Password`, type `postgres`.
+1. Under `Public IP address`, click the `Activated` box. Also click the `Enable database` switch. Under `Username` and `Password`, type `postgres`.<sup>1</sup>
 1. Under `Environment properties`, click `Add environment property`. Name it `GITHUB_TOKEN` and enter the entire token string you generated.
 1. Click `Next`, and on the `Review` page click `Submit` to create the app.
 
 ### 4. Deploy App in AWS EC2.
 
-1. In the AWS Management Console, navigate to Amazon `RDS`. Click `Databases` in the sidebar, then select the database generated when you made your application. Under `Connected compute resources`, click `Actions` and click `Set up EC2 connection`. In the `EC2 instance` dropdown, select the EC2 instance running your application, then click `Continue`.
+1. Open Amazon RDS in the AWS Management Console. Click `Databases` in the sidebar, then select the database you generated when you created your Elastic Beanstalk application. Under `Connected compute resources`, click `Actions` and click `Set up EC2 connection`. In the `EC2 instance` dropdown, select the EC2 instance running your application, then click `Continue`.
 1. From the EC2 page of the AWS Management Console, click `Instances`, and then the string under the `Instance ID` of the instance running your application. Click `Connect`, ensure that `Connect using EC2 Instance Connect` is checked, and then click the `Connect` button at the bottom-right.
-1. In the EC2 Instance Connect command-line terminal, run `source /var/app/venv/staging-*/bin/activate`.
+1. In the EC2 Instance Connect command-line terminal, run `source /var/app/venv/staging-*/bin/activate`.<sup>2</sup>
 1. From the Elastic Beanstalk page of the AWS Management Console, click `Environments` and then the env you created (e.g. `Corteva-Challenge-env`). Copy the URL path under `Domain`.
-1. In the EC2 Instance Connect command-line terminal, define the `GITHUB_TOKEN` and `SQLALCHEMY_DATABASE_URI` environment variables.
+1. In the EC2 Instance Connect command-line terminal, define the `GITHUB_TOKEN` and `SQLALCHEMY_DATABASE_URI` environment variables.<sup>2</sup>
     
     1. In the terminal, run `export GITHUB_TOKEN=` followed by the entire token string you generated.
     1. In the terminal, run `export SQLALCHEMY_DATABASE_URI=postgresql+psycopg2://postgres:postgres@` followed by the `Corteva-Challenge-env` domain URL path, then add `:5432/postgres`.
     
-1. In the `Elastic Beanstalk > Environments > Corteva-Challenge-env > Configuration` section, define those two environment variables again.
+1. In the `Elastic Beanstalk > Environments > Corteva-Challenge-env > Configuration` section, define those two environment variables again.<sup>3</sup>
 
     1. In the `Environment properties` section of the `Configuration` page, if there is no environment variable named `GITHUB_TOKEN`, then add one and set its value to the entire GitHub token string.
     1. In the `Environment properties` section of the `Configuration` page, add an environment variable named `SQLALCHEMY_DATABASE_URI` and set its value to the same string `postgresql+psycopg2://postgres:postgres@`{domain}`:5432/postgres`.
 
-1. To start the server, run `flask setup-db`
-1. To load data into the database, run `flask load-data`.
+1. To start the server, run `flask setup-db`<sup>2</sup>
+1. To load data into the database, run `flask load-data`.<sup>2</sup>
 1. The application should now be fully usable. Navigate to the domain path URL you copied earlier in your browser, and you should be able to access any of the API endpoints defined below as subdomains.
 
-## API Endpoints
+### Notes
 
-### List
+In a full production deployment used by actual clients, I would write the app to:
+
+1. use a secure username and password, and require user authentication to access the application.
+2. run its setup steps automatically. For this test deployment, I do them manually.
+3. ensure that environment variables are passed between Elastic Beanstalk and the EC2 instance terminal. Currently, environment variables must be defined both places.
+
+## API
+
+### Endpoints
 
 - `/` returns a simple message stating whether the application is running.
 - `/apidocs` uses Flasgger to provide additional information on this application's API endpoints and what data they allow you to access.
@@ -158,9 +174,9 @@ classDiagram
 
 ## Future Features
 
-The following are not currently features of this application, but I would add them if implementing this for production-level use by actual clients.
+The following are not currently features of this application, but I would add them if implementing it for production-level use by actual clients.
 
-- **User Authentication.** Instead of allowing data access 
+- **User Authentication.** Instead of allowing data access to anyone who can access the page, the application could require user authentication.
 - **Scheduled Data Ingestion.** The application could query the source data files and update its database at specified intervals, like on a `cron` job. 
 - **Statistical Predictive Modeling.** The application could use daily weather reports to predict and yearly crop yield. In its most basic form, the application would correlate the data columns of the `weather_report` table in a given year with the `corn_bushels` yield for that year. Further models would identify which stations and periods of time best predict the yield.
 - **Filtering By Station Name.** Instead of accepting the arbitrary `station_id` parameter, the `/api/weather` endpoint could accept a `station_name` parameter and determine the ID number of that station by `SELECT`ing that `station_name` in the `weather_station` table.
