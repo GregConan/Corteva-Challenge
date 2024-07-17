@@ -25,9 +25,9 @@ This application retrieves, stores, processes, and accesses data about daily wea
 
 ### Current Deployment
 
-As of 2024-07-16, this application is running live on AWS at the URL below. See the [APIDocs](http://gconan-corteva-challenge.us-west-2.elasticbeanstalk.com/apidocs) for API usage information.
+As of 2024-07-16, this application is running live on AWS Elastic Beanstalk. For API usage information, see the APIDocs at the URL below. 
 
-http://gconan-corteva-challenge.us-west-2.elasticbeanstalk.com
+http://gconan-corteva-challenge.us-west-2.elasticbeanstalk.com/apidocs
 
 ## Dependencies
 
@@ -176,6 +176,7 @@ classDiagram
 
 The following are not currently features of this application, but I would add them if implementing it for production-level use by actual clients.
 
+- **Add Yearly Statistics Class/Model.** Explicitly define a SQL database table, and corresponding Python class in `models.py`, to store the yearly statistics returned from the `/api/weather/stats` endpoint.
 - **User Authentication.** Instead of allowing data access to anyone who can access the page, the application could require user authentication.
 - **Scheduled Data Ingestion.** The application could query the source data files and update its database at specified intervals, like on a `cron` job. 
 - **Statistical Predictive Modeling.** The application could use daily weather reports to predict and yearly crop yield. In its most basic form, the application would correlate the data columns of the `weather_report` table in a given year with the `corn_bushels` yield for that year. Further models would identify which stations and periods of time best predict the yield.
