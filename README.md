@@ -47,7 +47,7 @@ See `requirements.txt` for full list of dependencies.
 
 ### 1. Download Code and Token From GitHub
 
-1. After navigating to this (`Corteva-Challenge`) repository, click the `Code` dropdown and click `Download ZIP` to get this repository as a `.zip` file.
+1. Clone this (`Corteva-Challenge`) repository, then select all of its contents and export them as a .ZIP file. Do not just download the repository as a .ZIP file through the GitHub website, because that will put all of the repo contents in a top-level subdirectory within the .ZIP file and cause errors later.
 1. [Get a valid GitHub authorization token to access the GitHub API.](https://docs.github.com/en/rest/authentication/authenticating-to-the-rest-api)
 
 ### 2. Set Up AWS Before Creating App
@@ -81,20 +81,27 @@ See `requirements.txt` for full list of dependencies.
 
 1. Open Amazon RDS in the AWS Management Console. Click `Databases` in the sidebar, then select the database you generated when you created your Elastic Beanstalk application. Under `Connected compute resources`, click `Actions` and click `Set up EC2 connection`. In the `EC2 instance` dropdown, select the EC2 instance running your application, then click `Continue`.
 1. From the EC2 page of the AWS Management Console, click `Instances`, and then the string under the `Instance ID` of the instance running your application. Click `Connect`, ensure that `Connect using EC2 Instance Connect` is checked, and then click the `Connect` button at the bottom-right.
-1. In the EC2 Instance Connect command-line terminal, run `source /var/app/venv/staging-*/bin/activate`.<sup>2</sup>
+1. In the EC2 Instance Connect command-line terminal, run `source /var/app/venv/staging-*/bin/activate`.<sup>2</sup> 
 1. From the Elastic Beanstalk page of the AWS Management Console, click `Environments` and then the env you created (e.g. `Corteva-Challenge-env`). Copy the URL path under `Domain`.
-1. In the EC2 Instance Connect command-line terminal, define the `GITHUB_TOKEN` and `SQLALCHEMY_DATABASE_URI` environment variables.<sup>2</sup>
+1. From the RDS page of the AWS Management Console, go to `Databases` and then click the database you started for this app. Copy the URI path listed under `Endpoint & Port`.
+1. In the EC2 Instance Connect command-line terminal, activate the environment and define its variables.<sup>2</sup> In the terminal,
     
-    1. In the terminal, run `export GITHUB_TOKEN=` followed by the entire token string you generated.
-    1. In the terminal, run `export SQLALCHEMY_DATABASE_URI=postgresql+psycopg2://postgres:postgres@` followed by the `Corteva-Challenge-env` domain URL path, then add `:5432/postgres`.
+    1. Run `ls -d /var/app/venv/staging-*/bin` to get the `bin` directory path.
+    1. Run `export PYTHONPATH=` followed by the `bin` directory path.
+    1. Run `source ${PYTHONPATH}/activate` 
+    1. Run `export GITHUB_TOKEN=` followed by the entire GitHub access token string you generated.
+    1. Run `export SQLALCHEMY_DATABASE_URI=postgresql+psycopg2://postgres:postgres@` followed by the database URI path and `:5432/postgres` at the end.
     
-1. In the `Elastic Beanstalk > Environments > Corteva-Challenge-env > Configuration` section, define those two environment variables again.<sup>3</sup>
+1. In the `Elastic Beanstalk > Environments > Corteva-Challenge-env > Configuration` section, define those environment variables again.<sup>3</sup> In the `Environment properties` section of the `Configuration` page, 
 
-    1. In the `Environment properties` section of the `Configuration` page, if there is no environment variable named `GITHUB_TOKEN`, then add one and set its value to the entire GitHub token string.
-    1. In the `Environment properties` section of the `Configuration` page, add an environment variable named `SQLALCHEMY_DATABASE_URI` and set its value to the same string `postgresql+psycopg2://postgres:postgres@`{domain}`:5432/postgres`.
+    1. If there is no environment variable named `GITHUB_TOKEN`, then add one and set its value to the entire GitHub token string.
+    1. If there is no environment variable named `PYTHONPATH`, then add one and set its value to the `bin` directory path.
+    1. If there is no environment variable named `SQLALCHEMY_DATABASE_URI`, then add one and set its value to the same string `postgresql+psycopg2://postgres:postgres@`{database-URI}`:5432/postgres`.
 
-1. To start the server, run `flask setup-db`<sup>2</sup>
-1. To load data into the database, run `flask load-data`.<sup>2</sup>
+1. To start the application, connect to its host via EC2 Instance Connect and then do the following:
+    1. `cd` to the directory containing `app.py`. That file should be in a subdirectory of `/var/app/current/`.
+    1. Run `flask setup-db`.<sup>2</sup>
+    1. Load all data into the database by running `flask load-data`.<sup>2</sup>
 1. The application should now be fully usable. Navigate to the domain path URL you copied earlier in your browser, and you should be able to access any of the API endpoints defined below as subdomains.
 
 ### Notes
