@@ -1,4 +1,4 @@
-# Code Challenge Template
+# Code Challenge
 
 ## Contents
 
@@ -23,9 +23,9 @@
 
 This application retrieves, stores, processes, and accesses data about daily weather and yearly crop yields.
 
-### Current Deployment
+### Deployment
 
-As of 2024-07-16, this application is running live on AWS Elastic Beanstalk. For API usage information, see the APIDocs at the URL below. 
+This application ran live on AWS Elastic Beanstalk in July and August 2024, with API usage information at the link below.
 
 http://gconan-corteva-challenge.us-west-2.elasticbeanstalk.com/apidocs
 
@@ -192,4 +192,4 @@ The following are not currently features of this application, but I would add th
 ## Metadata
 
 - Written 2024-07-15 by @GregConan (gregmconan@gmail.com)
-- Updated 2024-07-16 by @GregConan (gregmconan@gmail.com)
+- Updated 2024-11-24 by @GregConan (gregmconan@gmail.com)
